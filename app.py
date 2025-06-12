@@ -17,11 +17,14 @@ handler = WebhookHandler(os.environ['LINE_CHANNEL_SECRET'])
 
 def extract_bp_values(image_path):
     text = pytesseract.image_to_string(Image.open(image_path))
-    numbers = list(map(int, re.findall(r'\b\d{2,3}\b', text)))
-    if len(numbers) >= 3:
-        # สมมติว่าเรียงลำดับ SYS, DIA, PULSE
-        sys, dia, pulse = numbers[:3]
+    print("📄 OCR text output:")
+    print(text)  # <--- ดูข้อความที่ได้จาก OCR
 
+    numbers = list(map(int, re.findall(r'\b\d{2,3}\b', text)))
+    print("🔢 Extracted numbers:", numbers)
+
+    if len(numbers) >= 3:
+        sys, dia, pulse = numbers[:3]
         if 90 <= sys <= 200 and 50 <= dia <= 130 and 40 <= pulse <= 180:
             return sys, dia, pulse
 
