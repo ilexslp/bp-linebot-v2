@@ -17,14 +17,15 @@ handler = WebhookHandler(os.environ['LINE_CHANNEL_SECRET'])
 
 def extract_bp_values(image_path):
     text = pytesseract.image_to_string(Image.open(image_path))
-    sys = re.search(r'\b1\d{2}\b', text)
-    dia = re.search(r'\b7\d\b', text)
-    pulse = re.search(r'\b[5-9]\d\b', text)
-    return (
-        int(sys.group()) if sys else None,
-        int(dia.group()) if dia else None,
-        int(pulse.group()) if pulse else None
-    )
+    numbers = list(map(int, re.findall(r'\b\d{2,3}\b', text)))
+    if len(numbers) >= 3:
+        # สมมติว่าเรียงลำดับ SYS, DIA, PULSE
+        sys, dia, pulse = numbers[:3]
+
+        if 90 <= sys <= 200 and 50 <= dia <= 130 and 40 <= pulse <= 180:
+            return sys, dia, pulse
+
+    return None, None, None
 
 def save_to_sheet(user_id, sys, dia, pulse):
     try:
@@ -69,4 +70,3 @@ def handle_image(event):
 if __name__ == "__main__":
     port = int(os.environ.get("PORT", 5000))
     app.run(host="0.0.0.0", port=port)
-
